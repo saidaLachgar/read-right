@@ -1,0 +1,22 @@
+@use 'sass:math';
+
+.Loading {
+  &__content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .Icon {
+    color: inherit;
+    height: 1.6rem;
+    width: 1.6rem;
+    margin-right: 8px;
+  }
+
+  &--no-text {
+    .Icon {
+      margin: 0;
+    }
+  }
+}

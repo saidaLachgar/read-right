@@ -1,0 +1,99 @@
+html {
+  overflow-x: hidden;
+  overflow-y: scroll;
+
+  @media (prefers-reduced-motion: reduce) {
+    scroll-behavior: auto;
+  }
+}
+
+body,
+html {
+  scroll-behavior: smooth;
+}
+
+*,
+*::after,
+*::before {
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  word-break: break-word;
+  word-wrap: break-word;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html,
+fieldset,
+sup,
+figure {
+  border: 0;
+}
+
+button {
+  text-align: inherit;
+  border-radius: 0;
+}
+
+a,
+a:active,
+a:visited {
+  text-decoration: none;
+  outline: 0;
+  color: currentColor;
+}
+
+strong {
+  font-weight: 600;
+}
+
+b {
+  font-weight: 500;
+}
+
+svg {
+  overflow: hidden;
+  vertical-align: middle;
+}
+
+caption {
+  color: currentColor;
+  text-align: left;
+  caption-side: bottom;
+}
+
+img,
+video {
+  user-select: none;
+  border-style: none;
+  max-width: 100%;
+  height: auto;
+  display: inline-block;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+small {
+  font-size: 12px;
+}
+
+button,
+a {
+  cursor: pointer;
+}
+button,
+input,
+select,
+textarea {
+  line-height: inherit;
+  appearance: none;
+  -webkit-appearance: none;
+  outline: 0;
+  border: 0;
+}
