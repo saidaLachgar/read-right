@@ -152,9 +152,11 @@ export default function FrenchReadingTool() {
               )}
               <br />
               <br />
-              <audio controls>
-                <source src={`https://api.streamelements.com/kappa/v2/speech?voice=fr-FR-Standard-C&text=${selectedWord}`} />
-              </audio>
+              {!dictionaryLoading &&
+                <audio controls>
+                  <source src={`https://api.streamelements.com/kappa/v2/speech?voice=fr-FR-Standard-C&text=${selectedWord}`} />
+                </audio>
+              }
             </Box>
           )}
         </Box>
