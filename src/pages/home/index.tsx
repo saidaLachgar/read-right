@@ -46,18 +46,18 @@ export default function FrenchReadingTool() {
   }, [translateError]);
 
   // TTS mutation
-  const { mutate: ttsMutation, isLoading: TTSLoading } = useMutation(
-    api.getAudioForText,
-    {
-      onSuccess: (base64Audio: string) => {
-        const audioElement = new Audio(base64Audio)
-        audioElement.play()
-      },
-      onError: (error: AxiosError) => {
-        alert('❌ Error fetching audio. ' + error.message)
-      },
-    },
-  )
+  // const { mutate: ttsMutation, isLoading: TTSLoading } = useMutation(
+  //   api.getAudioForText,
+  //   {
+  //     onSuccess: (base64Audio: string) => {
+  //       const audioElement = new Audio(base64Audio)
+  //       audioElement.play()
+  //     },
+  //     onError: (error: AxiosError) => {
+  //       alert('❌ Error fetching audio. ' + error.message)
+  //     },
+  //   },
+  // )
 
   // Dictionary query
   const { data: wordDefinition, isLoading: dictionaryLoading, error: dictionaryError } = useQuery(
@@ -86,12 +86,12 @@ export default function FrenchReadingTool() {
     setSelectedWord(word.replace(/[^\w\sÀ-ÿ]/g, '').toLowerCase())
   }
 
-  const handlePlayAudio = () => {
-    ttsMutation(extractedText)
-  }
+  // const handlePlayAudio = () => {
+  //   ttsMutation(extractedText)
+  // }
 
   return (
-    <Box className="anim-fade-in" p={40}>
+    <Box p={40}>
       {/* Header */}
       <Pagehead>
         <Heading
@@ -118,6 +118,7 @@ export default function FrenchReadingTool() {
         }}
       >
         <Box>
+          {/* Upload Image */}
           {!extractedText && (
             <>
               <Text sx={{ mb: 15 }}>
@@ -126,7 +127,6 @@ export default function FrenchReadingTool() {
               </Text>
               <br />
               <br />
-              {/* Upload Image */}
               <TextInput
                 type="file"
                 accept="image/*"
@@ -152,18 +152,9 @@ export default function FrenchReadingTool() {
               )}
               <br />
               <br />
-              <Button
-                onClick={() => {
-                  ttsMutation(selectedWord)
-                }}
-                variant="primary"
-                disabled={dictionaryLoading}
-              >
-                <svg width="25" height="25">
-                  <use href="#audio" />
-                </svg>{' '}
-                Écouter la prononciation
-              </Button>
+              <audio controls>
+                <source src={`https://api.streamelements.com/kappa/v2/speech?voice=fr-FR-Standard-C&text=${selectedWord}`} />
+              </audio>
             </Box>
           )}
         </Box>
@@ -174,11 +165,7 @@ export default function FrenchReadingTool() {
               <Heading variant="medium" as="h2" sx={{ mb: 2 }}>
                 📝 Texte extrait
               </Heading>
-              {OCRLoading && (
-                <div style={{ textAlign: 'center' }}>
-                  <Spinner />
-                </div>
-              )}
+              {OCRLoading && <Spinner />}
               {ocrText && !extractedText && (
                 <>
                   <Textarea
@@ -191,7 +178,7 @@ export default function FrenchReadingTool() {
                   <Button
                     onClick={() => setExtractedText(ocrText)}
                     variant="primary"
-                    disabled={!selectedImage || TTSLoading}
+                    disabled={translateLoading}
                   >
                     Traduire en anglais
                   </Button>
@@ -225,11 +212,7 @@ export default function FrenchReadingTool() {
               <Heading variant="medium" as="h2" sx={{ mb: 2 }}>
                 🔄 Traduction (anglais)
               </Heading>
-              {translateLoading && (
-                <div style={{ textAlign: 'center' }}>
-                  <Spinner />
-                </div>
-              )}
+              {translateLoading && <Spinner />}
               {translation && <Text sx={{ fontSize: [12, 13, 16] }}>{translation}</Text>}
             </Box>
           )}
@@ -241,7 +224,10 @@ export default function FrenchReadingTool() {
                 🎤 Lecture complète du texte
               </Heading>
               <br />
-              <Button
+              <audio controls>
+                <source src={`https://api.streamelements.com/kappa/v2/speech?voice=fr-FR-Standard-C&text=${extractedText}`} />
+              </audio>
+              {/* <Button
                 onClick={handlePlayAudio}
                 variant="primary"
                 disabled={!selectedImage || TTSLoading}
@@ -259,7 +245,7 @@ export default function FrenchReadingTool() {
                   />
                 </svg>{' '}
                 Lire le texte complet
-              </Button>
+              </Button> */}
             </Box>
           )}
         </Box>

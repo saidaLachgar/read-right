@@ -2,7 +2,18 @@ import axios from 'axios';
 
 const RAPIDAPI_API_KEY = import.meta.env.VITE_RAPIDAPI_KEY;
 
-// OCR function using Optiic API
+const executeWithFallback = async (apis) => {
+  for (const api of apis) {
+    try {
+      return await api();
+    } catch (error: any) {
+      console.warn(`API failed, trying next: ${error.message}`);
+    }
+  }
+  throw new Error('All fallback APIs failed');
+};
+
+// OCR 
 const extractText = async (image: File) => {
   const formData = new FormData();
   formData.append('image', image);
@@ -15,7 +26,7 @@ const extractText = async (image: File) => {
   return response.data.text;
 };
 
-// Translation function using LibreTranslate API
+// Translation 
 const translateText = async (text: string) => {
   const response = await axios.post('https://openl-translate.p.rapidapi.com/translate', {
     target_lang: 'en',
@@ -30,22 +41,32 @@ const translateText = async (text: string) => {
   return response.data.translatedText;
 };
 
-// TTS function using Play.ht API
+// TTS 
 const getAudioForText = async (text: string) => {
-  return await axios.get('https://streamlined-edge-tts.p.rapidapi.com/tts', {
-    params: {
-      text: text,
-      voice: 'fr-FR-Denise'
-    },
-    headers: {
-      'x-rapidapi-key': '35d8516dbdmsh12f5264af41fa87p1281bfjsn758f07786953',
-      'x-rapidapi-host': 'streamlined-edge-tts.p.rapidapi.com'
-    },
-    responseType: 'arraybuffer'
-  }).then(response => `data:${response.headers['content-type']};base64,${btoa(String.fromCharCode(...new Uint8Array(response.data)))}`)
+  const apis = [
+    () => axios.get('https://streamlined-edge-tts.p.rapidapi.com/tts', {
+      params: { text, voice: 'fr-FR-Denise' },
+      headers: {
+        'x-rapidapi-key': RAPIDAPI_API_KEY,
+        'x-rapidapi-host': 'streamlined-edge-tts.p.rapidapi.com'
+      },
+      responseType: 'arraybuffer'
+    }).then(response => `data:${response.headers['content-type']};base64,${btoa(String.fromCharCode(...new Uint8Array(response.data)))}`),
+
+    // () => axios.post('https://lazypy.ro/tts/request_tts.php', {
+    //   params: { text, voice: 'fr-FR-Denise' },
+    //   headers: {
+    //     'x-rapidapi-key': RAPIDAPI_API_KEY,
+    //     'x-rapidapi-host': 'text-to-speech27.p.rapidapi.com'
+    //   },
+    //   responseType: 'arraybuffer'
+    // }).then(response => `data:${response.headers['content-type']};base64,${btoa(String.fromCharCode(...new Uint8Array(response.data)))}`)
+  ];
+
+  return await executeWithFallback(apis);
 };
 
-// Dictionary function using WordsAPI
+// Dictionary
 const fetchWordDefinition = async (word: string) => {
   const response = await axios.get(`https://dicolink.p.rapidapi.com/mot/${word}/definitions`, {
     headers: {
