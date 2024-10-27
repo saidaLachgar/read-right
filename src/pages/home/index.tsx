@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useMutation, useQuery } from 'react-query'
 import api from 'src/api'
 import {
@@ -11,6 +11,7 @@ import {
   Textarea,
 } from '@primer/react' // Importing Primer components
 import { Pagehead } from '@primer/react/deprecated'
+import { AxiosError } from 'axios'
 
 export default function FrenchReadingTool() {
   const [selectedImage, setSelectedImage] = useState(null)
@@ -25,20 +26,24 @@ export default function FrenchReadingTool() {
       onSuccess: (text) => {
         setOcrText(text)
       },
-      onError: () => {
-        alert('❌ Error extracting text, please try again.')
+      onError: (error: AxiosError) => {
+        alert('❌ Error extracting text. ' + error.message)
       },
     },
   )
 
   // Translation query
-  const { data: translation, isLoading: translateLoading } = useQuery(
+  const { data: translation, isLoading: translateLoading, error: translateError } = useQuery(
     ['translate', extractedText],
     () => api.translateText(extractedText),
-    {
-      enabled: !!extractedText,
-    },
+    { enabled: !!extractedText },
   )
+
+  useEffect(() => {
+    translateError && alert(
+      '❌ Error in text translation. ' + (translateError as AxiosError).message
+    )
+  }, [translateError]);
 
   // TTS mutation
   const { mutate: ttsMutation, isLoading: TTSLoading } = useMutation(
@@ -48,20 +53,26 @@ export default function FrenchReadingTool() {
         const audioElement = new Audio(base64Audio)
         audioElement.play()
       },
-      onError: () => {
-        alert('❌ Error fetching audio, please try again.')
+      onError: (error: AxiosError) => {
+        alert('❌ Error fetching audio. ' + error.message)
       },
     },
   )
 
   // Dictionary query
-  const { data: wordDefinition, isLoading: dictionaryLoading } = useQuery(
+  const { data: wordDefinition, isLoading: dictionaryLoading, error: dictionaryError } = useQuery(
     ['dictionary', selectedWord],
     () => api.fetchWordDefinition(selectedWord),
     {
       enabled: !!selectedWord,
     },
   )
+
+  useEffect(() => {
+    dictionaryError && alert(
+      '❌ Error in word definition. ' + (dictionaryError as AxiosError).message
+    )
+  }, [dictionaryError]);
 
   const handleImageUpload = (e: any) => {
     const file = e.target.files[0]
@@ -72,7 +83,7 @@ export default function FrenchReadingTool() {
   }
 
   const handleWordClick = (word: string) => {
-    setSelectedWord(word)
+    setSelectedWord(word.replace(/[^\w\sÀ-ÿ]/g, '').toLowerCase())
   }
 
   const handlePlayAudio = () => {
@@ -132,13 +143,10 @@ export default function FrenchReadingTool() {
               <Heading variant="medium" as="h3">
                 📚 Définition de <strong>{selectedWord}</strong>
               </Heading>
-              {dictionaryLoading && (
-                <div style={{ textAlign: 'center' }}>
-                  <Spinner />
-                </div>
-              )}
-              {!dictionaryLoading && (
-                <Text>
+              <br />
+              {dictionaryLoading && (<Spinner />)}
+              {!dictionaryLoading && wordDefinition && (
+                <Text sx={{ fontSize: [12, 13, 16] }}>
                   {wordDefinition[0]?.definition || 'No definition found.'}
                 </Text>
               )}
@@ -177,7 +185,7 @@ export default function FrenchReadingTool() {
                     value={ocrText}
                     onChange={(e) => setOcrText(e.target.value)}
                     rows={10}
-                    sx={{ width: '100%', mt: 2, mb: 20 }}
+                    sx={{ width: '100%', mt: 2, mb: 20, fontSize: [12, 13, 16] }}
                     aria-label="Edit OCR text"
                   />
                   <Button
@@ -190,8 +198,8 @@ export default function FrenchReadingTool() {
                 </>
               )}
               {extractedText && (
-                <Text>
-                  {extractedText.split(' ').map((word, index) => (
+                <Text sx={{ fontSize: [12, 13, 16] }}>
+                  {extractedText.split(/\s+|\n/).map((word, index) => (
                     <Text
                       key={index}
                       as="span"
@@ -222,7 +230,7 @@ export default function FrenchReadingTool() {
                   <Spinner />
                 </div>
               )}
-              {translation && <Text>{translation}</Text>}
+              {translation && <Text sx={{ fontSize: [12, 13, 16] }}>{translation}</Text>}
             </Box>
           )}
 
